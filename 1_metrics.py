@@ -127,5 +127,5 @@ def ex_without_sklearn():
 
 
 if __name__ == '__main__':
-    chat_sol()
+    roc_with_sklearn()
 
