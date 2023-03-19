@@ -2,9 +2,10 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sb
+from sklearn.metrics import confusion_matrix, roc_curve, auc
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-from sklearn import metrics
+
 
 
 # constants
@@ -25,7 +26,6 @@ def read_data_from_path() -> pd.DataFrame:
     """
 
     df = pd.read_csv(PATH)
-    print(df.info())
     return df
 
 
@@ -84,29 +84,48 @@ def gen_confusion_mat(df: pd.DataFrame):
     return confusion_mat, tpr, fpr
 
 
-if __name__ == '__main__':
+def roc_with_sklearn():
+    data = read_data_from_path()
+    fpr, tpr, thresholds = roc_curve(data[CANCER], data[DIA])
+    roc_auc = auc(fpr, tpr)
+
+
+    best_val_check = tpr - fpr
+    best_threshold = thresholds[np.argmax(best_val_check)]
+
+
+    print("ROC AUC score:", roc_auc)
+    print("Best threshold:", best_threshold)
+
+
+
+def ex_without_sklearn():
     data = read_data_from_path()
     best_threshold = 0
     best_fpr = 1
     best_dis = 0
 
     # y=x points to calc the best threshold
-    p1 = np.array([0,0])
-    p2 = np.array([1,1])
+    p1 = np.array([0, 0])
+    p2 = np.array([1, 1])
     norm = np.linalg.norm
 
-
     for i in range(1000):
-        data1 = add_basic_model_prediction(data, i/100)
+        data1 = add_basic_model_prediction(data, i / 100)
         data1 = add_confusion_cols(data1)
         confus_mat, tpr, fpr = gen_confusion_mat(data1)
         p3 = np.array([fpr, tpr])
-        distance = norm(np.cross(p2-p1, p1-p3))/norm(p2-p1)
-        plt.plot(fpr, tpr, color='green', linestyle='solid', linewidth=3, marker='o')
+        distance = norm(np.cross(p2 - p1, p1 - p3)) / norm(p2 - p1)
+        plt.plot(fpr, tpr, color='green', linestyle='solid', linewidth=3,
+                 marker='o')
         if distance > best_dis:
             best_dis = distance
-            best_threshold = i/100
+            best_threshold = i / 100
             best_fpr = fpr
     plt.show()
     print(f"best threshold is: {best_threshold} and it's fpr is: {best_fpr}")
+
+
+if __name__ == '__main__':
+    chat_sol()
 
